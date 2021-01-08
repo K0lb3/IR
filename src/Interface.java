@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.zip.DataFormatException;
 
 import static java.lang.Integer.min;
@@ -29,8 +30,8 @@ public class Interface {
         public void actionPerformed(ActionEvent e) {
             try {
                 String query = textField1.getText();
-                ScoreDoc[] hits = pa06.search(query);
-                System.out.println(hits.length);
+                ArrayList<pa06.Hit> hits = pa06.search(query);
+                System.out.println(hits.size());
             } catch (ParseException exception) {
                 exception.printStackTrace();
             } catch (IOException exception) {

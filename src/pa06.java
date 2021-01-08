@@ -122,7 +122,19 @@ public class pa06 {
         System.out.println("Done");
     }
 
-    public static ScoreDoc[] search(String querystr) throws ParseException, IOException {
+    public static class Hit{
+        private int rank;
+        private float score;
+        private Document doc;
+
+        public Hit(int rank,float score,Document doc){
+            this.rank = rank;
+            this.score = score;
+            this.doc = doc;
+        }
+    }
+
+    public static ArrayList<Hit> search(String querystr) throws ParseException, IOException {
         MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, analyzer);
         Query q = parser.parse(querystr);
 
@@ -132,9 +144,16 @@ public class pa06 {
         TopScoreDocCollector collector = TopScoreDocCollector.create(MAX_RESULTS);
         searcher.search(q, collector);
         ScoreDoc[] hits = collector.topDocs().scoreDocs;
+
+        ArrayList<Hit> results = new ArrayList<Hit>();
+        for (int i = 0; i < hits.length; i++) {
+            results.add(new Hit(i + 1, hits[i].score, searcher.doc(hits[i].doc)));
+        }
         reader.close();
-        return hits;
+        return results;
     }
+
+
 
     public static void main(String[] args) throws IOException, ParseException, DataFormatException {
         System.out.println("-------------------------------");
