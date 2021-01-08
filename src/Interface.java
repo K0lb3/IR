@@ -1,15 +1,15 @@
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.search.ScoreDoc;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.zip.DataFormatException;
 
-import static java.lang.Integer.min;
 
 public class Interface {
     private JButton searchButton;
@@ -38,6 +38,23 @@ public class Interface {
                 exception.printStackTrace();
             }
         }
+    }
+
+    public ArrayList<File> getDocImages(Document d){
+        /*
+            Lists all images of a specific doc
+            by looking for images in the directory of the document
+         */
+        File dir = Paths.get(d.get("path")).getParent().toFile();
+        ArrayList<File> images = new ArrayList<File>();
+        for (File f : dir.listFiles()) {
+            String filename = f.getName().toLowerCase();
+            if (filename.endsWith(".jpg") || filename.endsWith(".jpeg") ||
+                    filename.endsWith(".gif") || filename.endsWith(".png")) {
+                images.add(f);
+            }
+        }
+        return images;
     }
 
     public static void main(String[] args) throws IOException, DataFormatException {
