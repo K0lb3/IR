@@ -123,9 +123,9 @@ public class pa06 {
     }
 
     public static class Hit{
-        private int rank;
-        private float score;
-        private Document doc;
+        public int rank;
+        public float score;
+        public Document doc;
 
         public Hit(int rank,float score,Document doc){
             this.rank = rank;

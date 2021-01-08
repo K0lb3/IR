@@ -15,10 +15,11 @@ public class Interface {
     private JButton searchButton;
     private JTextField textField1;
     private JProgressBar progressBar1;
-    private JTable table1;
     private JPanel MainView;
+    private JScrollPane scrollPane;
 
     public Interface() {
+        //table1.revalidate();
         searchButton.addActionListener(new SearchBtnClicked());
     }
 
@@ -32,6 +33,16 @@ public class Interface {
                 String query = textField1.getText();
                 ArrayList<pa06.Hit> hits = pa06.search(query);
                 System.out.println(hits.size());
+
+
+                String[][] data = new String[hits.size()][3];
+                int i = 0;
+                for(pa06.Hit hit: hits){
+                    data[i][0] = Integer.toString(hit.rank);
+                    data[i][1] = Float.toString(hit.score);
+                    data[i][2] = hit.doc.get("name");
+                }
+                //table1.repaint();
             } catch (ParseException exception) {
                 exception.printStackTrace();
             } catch (IOException exception) {
