@@ -5,6 +5,14 @@
  */
 package my.IRInterface;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.DataFormatException;
+import javax.swing.DefaultListModel;
+import org.apache.lucene.queryparser.classic.ParseException;
+
 /**
  *
  * @author Tjark
@@ -14,8 +22,13 @@ public class IRINterfaceUI extends javax.swing.JFrame {
     /**
      * Creates new form IRINterfaceUI
      */
+    private ArrayList<search.Hit> last_result;
+    private DefaultListModel<String> list_model = new DefaultListModel<>();
+
     public IRINterfaceUI() {
         initComponents();
+        jList1.setModel(list_model);
+        jScrollPane1.setViewportView(jList1);
     }
 
     /**
@@ -82,7 +95,18 @@ public class IRINterfaceUI extends javax.swing.JFrame {
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
+        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                jList1MouseReleased(evt);
+            }
+        });
         jScrollPane1.setViewportView(jList1);
+        jList1.setModel(new javax.swing.AbstractListModel<String>() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public String getElementAt(int i) { return strings[i]; }
+            public void setElementAt(int i, String str) {strings[i] = str;}
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -195,16 +219,42 @@ public class IRINterfaceUI extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
+        String query = jTextField3.getText();
+        try {
+            last_result = search.search(query);
+        } catch (Exception ex) {
+            last_result = new ArrayList<search.Hit>();
+        }
+        list_model.removeAllElements();
+        for (search.Hit h : last_result) {
+            list_model.addElement(h.doc.get("name"));
+        }
+        jScrollPane1.setViewportView(jList1);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jTextField3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField3ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField3ActionPerformed
 
+    private void jList1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jList1MouseReleased
+        // TODO add your handling code here:
+        System.out.print("Test");
+        for (int i = 0; i < list_model.size(); i++) {
+            if (jList1.isSelectedIndex(i)){
+                search.Hit h = last_result.get(i);
+                jTextField1.setText(Float.toString(h.score));
+                jTextField2.setText(h.doc.get("name"));
+                jTextField4.setText(h.doc.get("content"));
+                System.out.println(list_model.get(i));
+                break;
+            }
+        }
+    }//GEN-LAST:event_jList1MouseReleased
+
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
+    public static void main(String args[]) throws IOException, DataFormatException {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -227,6 +277,8 @@ public class IRINterfaceUI extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(IRINterfaceUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+        /* init backgroud search engine */
+        search.init("D:\\InfoRet\\dump");
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
