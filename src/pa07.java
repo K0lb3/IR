@@ -22,20 +22,16 @@ import org.apache.lucene.search.similarities.ClassicSimilarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 import org.jsoup.Jsoup;
-
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
-
-import static java.lang.Integer.min;
 
 public class pa07 {
     static int MAX_RESULTS = 10;
@@ -98,7 +94,7 @@ public class pa07 {
         w.addDocument(doc);
     }
 
-    public static void init(String path) throws IOException, DataFormatException {
+    public static void createIndex(String path) throws IOException, DataFormatException{
         System.out.println("Indexing...");
         File file = new File(path);
         listFilesForFolder(file);
@@ -122,6 +118,10 @@ public class pa07 {
         System.out.println("Done");
     }
 
+    public static void init(String path) throws IOException, DataFormatException {
+
+    }
+
     public static class Hit{
         public int rank;
         public float score;
@@ -132,7 +132,51 @@ public class pa07 {
             this.score = score;
             this.doc = doc;
         }
+
+        @Override
+        public String toString(){
+            String str = "";
+
+            str += rank + "; ";
+            str += score + "; ";
+            str += doc.get("name") + "; ";
+            str += doc.get("content");
+
+            return str;
+        }
+
+        public ArrayList<String> getHitData(){
+            ArrayList<String> ret = new ArrayList<>();
+
+            ret.add(Integer.toString(this.rank));
+            ret.add(Float.toString(this.score));
+            ret.add(this.doc.get("name"));
+            ret.add(this.doc.get("last modified"));
+            ret.add(this.doc.get("content"));
+
+            return ret;
+        }
+
+        public String getDocImages(){
+        /*
+            Lists all images of a specific doc
+            by looking for images in the directory of the document
+         */
+            File dir = Paths.get(this.doc.get("path")).getParent().toFile();
+            String imagePath = null;
+            for (File f : dir.listFiles()) {
+                String filename = f.getName().toLowerCase();
+                if (filename.endsWith(".jpg") || filename.endsWith(".jpeg") ||
+                        filename.endsWith(".gif") || filename.endsWith(".png")) {
+                    imagePath = f.getPath();
+                    break;
+                }
+            }
+            return imagePath;
+        }
     }
+
+
 
     public static ArrayList<Hit> search(String querystr) throws ParseException, IOException {
         MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, analyzer);
