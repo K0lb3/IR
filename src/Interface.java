@@ -87,7 +87,9 @@ public class Interface {
 
             for (int i = 0; i < hits.size(); i++){
                 pa07.Hit hit = hits.get(i);
-
+                /*
+                ADD SNIPPET HERE INSTEAD OF CONTENT IN OBJECT ARRAY ROW
+                 */
                 Object[] row = {
                         null,
                         Integer.toString(hit.rank),
