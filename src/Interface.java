@@ -33,7 +33,8 @@ public class Interface {
                 String query = textField1.getText();
                 ArrayList<pa06.Hit> hits = pa06.search(query);
                 System.out.println(hits.size());
-
+                Document document = hits.get(0).doc;
+                System.out.println(document.get("name"));
 
                 String[][] data = new String[hits.size()][3];
                 int i = 0;
@@ -74,6 +75,6 @@ public class Interface {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
-        pa06.init("D:\\InfoRet\\dump");
+        pa06.init("C:/Users/denni/Desktop/uni/IR/dump");
     }
 }
