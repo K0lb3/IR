@@ -3,6 +3,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -29,6 +30,7 @@ public class Interface {
         //table1.revalidate();
         searchButton.addActionListener(new SearchBtnClicked());
         createIndexButton.addActionListener(new CreateIndexButtonClicked());
+        progressBar1.setStringPainted(true);
     }
 
     private void createUIComponents() {
@@ -54,7 +56,7 @@ public class Interface {
         public void actionPerformed(ActionEvent e) {
             //System.out.println("Called IndexButton");
             try {
-                pa07.createIndex(textField2.getText());
+                pa07.createIndex(textField2.getText(), progressBar1);
             } catch (DataFormatException | IOException dataFormatException) {
                 dataFormatException.printStackTrace();
             }
@@ -70,7 +72,7 @@ public class Interface {
             //System.out.println("Called SearchButton");
             try {
                 String query = textField1.getText();
-                ArrayList<pa07.Hit> hits = pa07.search(query);
+                ArrayList<pa07.Hit> hits = pa07.search(query, progressBar1);
 
                 for (int i=0; i < hits.size(); i++){
                     pa07.Hit hit = hits.get(i);

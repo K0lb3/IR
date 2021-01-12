@@ -22,6 +22,8 @@ import org.apache.lucene.search.similarities.ClassicSimilarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 import org.jsoup.Jsoup;
+
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -94,8 +96,9 @@ public class pa07 {
         w.addDocument(doc);
     }
 
-    public static void createIndex(String path) throws IOException, DataFormatException{
+    public static void createIndex(String path, JProgressBar bar) throws IOException, DataFormatException{
         System.out.println("Indexing...");
+        bar.setString("looking for files...");
         File file = new File(path);
         listFilesForFolder(file);
 
@@ -111,15 +114,20 @@ public class pa07 {
         config.setSimilarity(new ClassicSimilarity());
         IndexWriter writer = new IndexWriter(index, config);
 
+        // prepare progress bar
+        BoundedRangeModel model = bar.getModel();
+        int c = 0;
+        int max = files.size();
+        model.setMaximum(max);
+        bar.setString(String.format("%d / %d files indexed", c, max));
+        // index files
         for (File value : files) {
             addDoc(writer, value);
+            model.setValue(++c);
+            bar.setString(String.format("%d / %d files indexed", c, max));
         }
         writer.close();
         System.out.println("Done");
-    }
-
-    public static void init(String path) throws IOException, DataFormatException {
-
     }
 
     public static class Hit{
@@ -178,7 +186,7 @@ public class pa07 {
 
 
 
-    public static ArrayList<Hit> search(String querystr) throws ParseException, IOException {
+    public static ArrayList<Hit> search(String querystr, JProgressBar bar) throws ParseException, IOException {
         MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, analyzer);
         Query q = parser.parse(querystr);
 
