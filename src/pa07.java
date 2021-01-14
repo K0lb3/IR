@@ -1,4 +1,5 @@
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.apache.lucene.analysis.core.StopFilterFactory;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
@@ -12,18 +13,21 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.queryparser.classic.FastCharStream;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopScoreDocCollector;
+import org.apache.lucene.search.highlight.*;
 import org.apache.lucene.search.similarities.ClassicSimilarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 import org.jsoup.Jsoup;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,7 +35,6 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 
@@ -96,7 +99,7 @@ public class pa07 {
         w.addDocument(doc);
     }
 
-    public static void createIndex(String path, JProgressBar bar) throws IOException, DataFormatException{
+    public static void createIndex(String path, JProgressBar bar) throws IOException, DataFormatException {
         System.out.println("Indexing...");
         bar.setString("looking for files...");
         File file = new File(path);
@@ -130,19 +133,21 @@ public class pa07 {
         System.out.println("Done");
     }
 
-    public static class Hit{
+    public static class Hit {
         public int rank;
         public float score;
         public Document doc;
+        public String[] frags;
 
-        public Hit(int rank,float score,Document doc){
+        public Hit(int rank, float score, Document doc, String[] frags) {
             this.rank = rank;
             this.score = score;
             this.doc = doc;
+            this.frags = frags;
         }
 
         @Override
-        public String toString(){
+        public String toString() {
             String str = "";
 
             str += rank + "; ";
@@ -153,7 +158,7 @@ public class pa07 {
             return str;
         }
 
-        public ArrayList<String> getHitData(){
+        public ArrayList<String> getHitData() {
             ArrayList<String> ret = new ArrayList<>();
 
             ret.add(Integer.toString(this.rank));
@@ -165,7 +170,7 @@ public class pa07 {
             return ret;
         }
 
-        public String getDocImages(){
+        public String getDocImages() {
         /*
             Lists all images of a specific doc
             by looking for images in the directory of the document
@@ -185,8 +190,7 @@ public class pa07 {
     }
 
 
-
-    public static ArrayList<Hit> search(String querystr, JProgressBar bar) throws ParseException, IOException {
+    public static ArrayList<Hit> search(String querystr, JProgressBar bar) throws ParseException, IOException, InvalidTokenOffsetsException {
         MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, analyzer);
         Query q = parser.parse(querystr);
 
@@ -197,9 +201,27 @@ public class pa07 {
         searcher.search(q, collector);
         ScoreDoc[] hits = collector.topDocs().scoreDocs;
 
-        ArrayList<Hit> results = new ArrayList<Hit>();
+        /** Highlighter Code Start ****/
+        // HighLighter Source: https://howtodoinjava.com/lucene/lucene-search-highlight-example/#search-highlight
+        Formatter formatter = new SimpleHTMLFormatter();
+        QueryScorer scorer = new QueryScorer(q);
+        Highlighter highlighter = new Highlighter(formatter, scorer);
+        Fragmenter fragmenter = new SimpleSpanFragmenter(scorer, 10);
+        highlighter.setTextFragmenter(fragmenter);
+
+        ArrayList<Hit> results = new ArrayList<>();
         for (int i = 0; i < hits.length; i++) {
-            results.add(new Hit(i + 1, hits[i].score, searcher.doc(hits[i].doc)));
+            ScoreDoc hit = hits[i];
+            int id = hit.doc;
+            Document doc = searcher.doc(id);
+            String fieldName = "content";
+            String text = doc.get(fieldName);
+
+            TokenStream tokenStream = TokenSources.getTokenStream(fieldName,
+                    searcher.getIndexReader().getTermVectors(id), text, analyzer, -1);
+            //TextFragment[] t = highlighter.getBestTextFragments(tokenStream, text, false, 10);
+            String[] frags = highlighter.getBestFragments(tokenStream, text, 10);
+            results.add(new Hit(i + 1, hit.score, doc, frags));
         }
         reader.close();
         return results;

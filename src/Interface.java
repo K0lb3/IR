@@ -1,4 +1,5 @@
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -84,7 +85,7 @@ public class Interface {
                 hits = pa07.search(query, progressBar1);
                 displaySearchResults(hits);
 
-            } catch (ParseException | IOException exception) {
+            } catch (ParseException | IOException | InvalidTokenOffsetsException exception) {
                 exception.printStackTrace();
             }
         }
