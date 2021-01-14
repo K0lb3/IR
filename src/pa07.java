@@ -72,6 +72,7 @@ public class pa07 {
         doc.add(new StringField("name", file.getName(), Field.Store.YES));
         doc.add(new StringField("path", file.getPath(), Field.Store.YES));
         doc.add(new StringField("last modified", lastMod, Field.Store.YES));
+        doc.add(new TextField("date", lastMod.substring(0, 10), Field.Store.YES));
 
         switch (file.getName().substring(file.getName().lastIndexOf("."))) {
             case (".txt"): {
@@ -84,7 +85,6 @@ public class pa07 {
                 String title = html.select("title").text();
                 String summary = html.select("summary").text();
                 doc.add(new TextField("title", title, Field.Store.YES));
-                doc.add(new TextField("date", lastMod.substring(0, 10), Field.Store.YES));
                 doc.add(new StringField("summary", summary, Field.Store.YES));
                 doc.add(new TextField("content", body, Field.Store.YES));
                 break;
@@ -171,7 +171,7 @@ public class pa07 {
             by looking for images in the directory of the document
          */
             File dir = Paths.get(this.doc.get("path")).getParent().toFile();
-            String imagePath = null;
+            String imagePath = "dataSrc/OvGU-Logo.jpg";
             for (File f : dir.listFiles()) {
                 String filename = f.getName().toLowerCase();
                 if (filename.endsWith(".jpg") || filename.endsWith(".jpeg") ||

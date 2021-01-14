@@ -1,15 +1,10 @@
-import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.zip.DataFormatException;
@@ -20,24 +15,33 @@ public class Interface {
     private JTextField textField1;
     private JProgressBar progressBar1;
     private JPanel MainView;
-    private JScrollPane scrollPane;
     private JTextField textField2;
     private JButton createIndexButton;
     private DefaultTableModel tModel;
     private JTable table1;
+    private JTextArea textArea1;
+    protected ArrayList<pa07.Hit> hits;
 
     public Interface() {
-        //table1.revalidate();
         searchButton.addActionListener(new SearchBtnClicked());
         createIndexButton.addActionListener(new CreateIndexButtonClicked());
+        table1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                jList1MouseReleased();
+            }
+        });
         progressBar1.setStringPainted(true);
+        textArea1.setLineWrap(true);
+        textArea1.setWrapStyleWord(true);
+        textArea1.setHighlighter(null);
+        textArea1.setEditable(false);
     }
 
     private void createUIComponents() {
-        String[] cols = {"Image","Rank", "Score", "Name", "Last Modified", "Preview"};
+        String[] cols = {"Image", "Rank", "Score", "Name", "Last Modified"};
         tModel = new DefaultTableModel(cols, 0);
 
-        table1 = new JTable(tModel){
+        table1 = new JTable(tModel) {
             public Class getColumnClass(int column) {
                 return (column == 0) ? Icon.class : Object.class;
             }
@@ -48,7 +52,14 @@ public class Interface {
         table1.setRowHeight(50);
     }
 
-    private class CreateIndexButtonClicked implements ActionListener{
+    private void jList1MouseReleased() {
+        int i = table1.getSelectedRow();
+        if (i == -1) return;
+        pa07.Hit hit = hits.get(i);
+        textArea1.setText(hit.doc.get("content"));
+    }
+
+    private class CreateIndexButtonClicked implements ActionListener {
         public CreateIndexButtonClicked() {
         }
 
@@ -72,11 +83,7 @@ public class Interface {
             //System.out.println("Called SearchButton");
             try {
                 String query = textField1.getText();
-                ArrayList<pa07.Hit> hits = pa07.search(query, progressBar1);
-
-                for (int i=0; i < hits.size(); i++){
-                    pa07.Hit hit = hits.get(i);
-                }
+                hits = pa07.search(query, progressBar1);
                 displaySearchResults(hits);
 
             } catch (ParseException | IOException exception) {
@@ -84,11 +91,25 @@ public class Interface {
             }
         }
 
-        private void displaySearchResults(ArrayList<pa07.Hit> hits) throws IOException {
+        private ImageIcon scaleIcon(ImageIcon icon){
+            int ih = icon.getIconHeight();
+            int iw = icon.getIconWidth();
+            if (ih > iw){
+                iw = iw*50/ih;
+                ih = 50;
+            }
+            else{
+                ih = ih*50/iw;
+                iw = 50;
+            }
+            Image img = icon.getImage().getScaledInstance(iw, ih, Image.SCALE_SMOOTH);
+            return new ImageIcon(img);
+        }
+
+        private void displaySearchResults(ArrayList<pa07.Hit> hits) {
             tModel.setRowCount(0);
 
-            for (int i = 0; i < hits.size(); i++){
-                pa07.Hit hit = hits.get(i);
+            for (pa07.Hit hit : hits) {
                 /*
                 ADD SNIPPET HERE INSTEAD OF CONTENT IN OBJECT ARRAY ROW
                  */
@@ -98,35 +119,20 @@ public class Interface {
                         Float.toString(hit.score),
                         hit.doc.get("name"),
                         hit.doc.get("date"),
-                        hit.doc.get("content")
                 };
-                String imgPath = hit.getDocImages();
-                ImageIcon icon;
-                if (imgPath != null){
-                    icon = new ImageIcon(hit.getDocImages());
-                    Image img = icon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
-                    icon = new ImageIcon(img);
-                }else{
-                    icon = new ImageIcon("dataSrc/OvGU-Logo.jpg");
-                    Image img = icon.getImage();
-                    double scaleFactor = 0.05;
-                    img = img.getScaledInstance(
-                            (int)(img.getWidth(null)*scaleFactor),
-                            (int)(img.getHeight(null)*scaleFactor),
-                            Image.SCALE_SMOOTH);
-                    icon = new ImageIcon(img);
-                }
-                row[0] = icon;
-
+                ImageIcon icon = new ImageIcon(hit.getDocImages());
+                row[0] = scaleIcon(icon);
                 tModel.addRow(row);
             }
         }
     }
 
 
-    public static void main(String[] args) throws IOException, DataFormatException {
+
+
+    public static void main(String[] args) {
         JFrame frame = new JFrame("Search Application");
-        frame.setSize(500,500);
+        frame.setSize(800, 450);
         frame.setContentPane(new Interface().MainView);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
