@@ -1,12 +1,17 @@
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
+import org.apache.lucene.search.highlight.TextFragment;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.zip.DataFormatException;
 
@@ -28,12 +33,15 @@ public class Interface {
         createIndexButton.addActionListener(new CreateIndexButtonClicked());
         table1.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
-                jList1MouseReleased();
+                try {
+                    jList1MouseReleased();
+                } catch (BadLocationException e) {
+                    e.printStackTrace();
+                }
             }
         });
         progressBar1.setStringPainted(true);
         textArea1.setLineWrap(true);
-        textArea1.setHighlighter(null);
     }
 
     private void createUIComponents() {
@@ -51,11 +59,43 @@ public class Interface {
         table1.setRowHeight(50);
     }
 
-    private void jList1MouseReleased() {
+    private static class TextFragmentPub{
+        TextFragment frag;
+        public int startPos;
+        public int endPos;
+
+        public TextFragmentPub(TextFragment frag){
+            this.frag = frag;
+            this.startPos = (int) this.getPrivate("textStartPos");
+            this.endPos = (int) this.getPrivate("textEndPos");
+        }
+        public Object getPrivate(String name){
+            try {
+                Field privateField = TextFragment.class.
+                        getDeclaredField(name);
+                privateField.setAccessible(true);
+                return privateField.get(this.frag);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
+
+    private void jList1MouseReleased() throws BadLocationException {
         int i = table1.getSelectedRow();
         if (i == -1) return;
         pa07.Hit hit = hits.get(i);
-        textArea1.setText(hit.doc.get("content"));
+
+        String text = hit.doc.get("content");
+        textArea1.setText(text);
+        Highlighter highlighter = textArea1.getHighlighter();
+        Highlighter.HighlightPainter painter =
+                new DefaultHighlighter.DefaultHighlightPainter(Color.pink);
+        for (TextFragment frag : hit.frags){
+            TextFragmentPub tfp = new TextFragmentPub(frag);
+            highlighter.addHighlight(tfp.startPos, tfp.endPos, painter);
+        }
     }
 
     private class CreateIndexButtonClicked implements ActionListener {
@@ -84,7 +124,6 @@ public class Interface {
                 String query = textField1.getText();
                 hits = pa07.search(query, progressBar1);
                 displaySearchResults(hits);
-
             } catch (ParseException | IOException | InvalidTokenOffsetsException exception) {
                 exception.printStackTrace();
             }
