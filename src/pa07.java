@@ -137,9 +137,9 @@ public class pa07 {
         public int rank;
         public float score;
         public Document doc;
-        public String[] frags;
+        public TextFragment[] frags;
 
-        public Hit(int rank, float score, Document doc, String[] frags) {
+        public Hit(int rank, float score, Document doc, TextFragment[] frags) {
             this.rank = rank;
             this.score = score;
             this.doc = doc;
@@ -203,7 +203,7 @@ public class pa07 {
 
         /** Highlighter Code Start ****/
         // HighLighter Source: https://howtodoinjava.com/lucene/lucene-search-highlight-example/#search-highlight
-        Formatter formatter = new SimpleHTMLFormatter();
+        Formatter formatter = new SimpleHTMLFormatter("","");
         QueryScorer scorer = new QueryScorer(q);
         Highlighter highlighter = new Highlighter(formatter, scorer);
         Fragmenter fragmenter = new SimpleSpanFragmenter(scorer, 10);
@@ -216,11 +216,10 @@ public class pa07 {
             Document doc = searcher.doc(id);
             String fieldName = "content";
             String text = doc.get(fieldName);
-
             TokenStream tokenStream = TokenSources.getTokenStream(fieldName,
                     searcher.getIndexReader().getTermVectors(id), text, analyzer, -1);
-            //TextFragment[] t = highlighter.getBestTextFragments(tokenStream, text, false, 10);
-            String[] frags = highlighter.getBestFragments(tokenStream, text, 10);
+            TextFragment[] frags = highlighter.getBestTextFragments(tokenStream,
+                    text, true, 10);
             results.add(new Hit(i + 1, hit.score, doc, frags));
         }
         reader.close();
