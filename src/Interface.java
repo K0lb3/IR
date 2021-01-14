@@ -32,9 +32,7 @@ public class Interface {
         });
         progressBar1.setStringPainted(true);
         textArea1.setLineWrap(true);
-        textArea1.setWrapStyleWord(true);
         textArea1.setHighlighter(null);
-        textArea1.setEditable(false);
     }
 
     private void createUIComponents() {
