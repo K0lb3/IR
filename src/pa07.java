@@ -148,6 +148,9 @@ public class pa07 {
 
         @Override
         public String toString() {
+            /**
+             * Intended for testing purposes.
+             */
             String str = "";
 
             str += rank + "; ";
@@ -159,6 +162,9 @@ public class pa07 {
         }
 
         public ArrayList<String> getHitData() {
+            /**
+             * Return all relevant data from hit.
+             */
             ArrayList<String> ret = new ArrayList<>();
 
             ret.add(Integer.toString(this.rank));
@@ -171,10 +177,10 @@ public class pa07 {
         }
 
         public String getDocImages() {
-        /*
-            Lists all images of a specific doc
-            by looking for images in the directory of the document
-         */
+            /**
+             * Search for images and if one is found, return its path. Otherwise the path of the ovgu logo is returned
+             * to act as a placeholder.
+             */
             File dir = Paths.get(this.doc.get("path")).getParent().toFile();
             String imagePath = "dataSrc/OvGU-Logo.jpg";
             for (File f : dir.listFiles()) {

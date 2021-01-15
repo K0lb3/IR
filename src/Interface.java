@@ -45,6 +45,9 @@ public class Interface {
     }
 
     private void createUIComponents() {
+        /**
+         * Initiate Table.
+         */
         String[] cols = {"Image", "Rank", "Score", "Name", "Last Modified"};
         tModel = new DefaultTableModel(cols, 0);
 
@@ -53,13 +56,15 @@ public class Interface {
                 return (column == 0) ? Icon.class : Object.class;
             }
         };
-        //table1.getColumn("Image").setMaxWidth(50);
         table1.getColumn("Rank").setMaxWidth(50);
         table1.getColumn("Score").setMaxWidth(50);
         table1.setRowHeight(50);
     }
 
     private static class TextFragmentPub{
+        /**
+         * Highlight text, get positions from Lucene and highlight with Swing.
+         */
         TextFragment frag;
         public int startPos;
         public int endPos;
@@ -83,6 +88,9 @@ public class Interface {
     }
 
     private void jList1MouseReleased() throws BadLocationException {
+        /**
+         * Preview selection from table.
+         */
         int i = table1.getSelectedRow();
         if (i == -1) return;
         pa07.Hit hit = hits.get(i);
@@ -104,7 +112,9 @@ public class Interface {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            //System.out.println("Called IndexButton");
+            /**
+             * Connecting "Create Index" button to functionality.
+             */
             try {
                 pa07.createIndex(textField2.getText(), progressBar1);
             } catch (DataFormatException | IOException dataFormatException) {
@@ -119,7 +129,9 @@ public class Interface {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            //System.out.println("Called SearchButton");
+            /**
+             * Connecting "Search Index" to functionality.
+             */
             try {
                 String query = textField1.getText();
                 hits = pa07.search(query, progressBar1);
@@ -130,6 +142,9 @@ public class Interface {
         }
 
         private ImageIcon scaleIcon(ImageIcon icon){
+            /**
+             * Icon scaling of width relative to height of 50px.
+             */
             int ih = icon.getIconHeight();
             int iw = icon.getIconWidth();
             if (ih > iw){
@@ -148,8 +163,8 @@ public class Interface {
             tModel.setRowCount(0);
 
             for (pa07.Hit hit : hits) {
-                /*
-                ADD SNIPPET HERE INSTEAD OF CONTENT IN OBJECT ARRAY ROW
+                /**
+                 * Fill Table with rank, score, file name and last modified.
                  */
                 Object[] row = {
                         null,
@@ -164,9 +179,6 @@ public class Interface {
             }
         }
     }
-
-
-
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Search Application");
