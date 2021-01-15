@@ -60,8 +60,10 @@ public class pa07 {
                 listFilesForFolder(fileEntry);
             } else {
                 String tmp = fileEntry.getName();
-                if (accepted_types.contains(tmp.substring(tmp.lastIndexOf("."))))
+                int ext = tmp.lastIndexOf(".");
+                if ((ext>0) && (accepted_types.contains(tmp.substring(ext)))) {
                     files.add(fileEntry);
+                }
             }
         }
     }

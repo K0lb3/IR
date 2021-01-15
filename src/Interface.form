@@ -33,7 +33,9 @@
             <preferred-size width="658" height="30"/>
           </grid>
         </constraints>
-        <properties/>
+        <properties>
+          <text value="query"/>
+        </properties>
       </component>
       <component id="4b9d3" class="javax.swing.JTextField" binding="textField2" default-binding="true">
         <constraints>
@@ -41,7 +43,9 @@
             <preferred-size width="658" height="30"/>
           </grid>
         </constraints>
-        <properties/>
+        <properties>
+          <text value="index path"/>
+        </properties>
       </component>
       <component id="54fda" class="javax.swing.JProgressBar" binding="progressBar1" default-binding="true">
         <constraints>
